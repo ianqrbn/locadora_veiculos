@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from cliente_create_view import ClientView
-# Importe os outros módulos de View conforme necessário
+
 
 
 class MainView(tk.Tk):
