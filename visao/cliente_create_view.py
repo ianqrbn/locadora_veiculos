@@ -1,10 +1,13 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+# Remova a importação de database aqui, a MainView que vai passar a instância
 
 class ClientView(ttk.Frame):
-    def __init__(self, parent, on_cadastro_success):
+    # Adicione 'db' como um parâmetro no construtor
+    def __init__(self, parent, db, on_cadastro_success):
         super().__init__(parent)
+        self.db = db # Armazena a instância do banco de dados
         self.on_cadastro_success = on_cadastro_success
         self.criar_widgets()
 
@@ -56,21 +59,23 @@ class ClientView(ttk.Frame):
         self.pack_forget()
 
     def cadastrar_cliente(self):
-        dados = {
-            "nome": self.nome_entry.get(),
-            "cpf": self.cpf_entry.get(),
-            "telefone": self.telefone_entry.get(),
-            "rua": self.rua_entry.get(),
-            "numero": self.numero_entry.get(),
-            "bairro": self.bairro_entry.get()
-        }
+        nome = self.nome_entry.get()
+        cpf = self.cpf_entry.get()
+        telefone = self.telefone_entry.get()
+        rua = self.rua_entry.get()
+        numero = self.numero_entry.get()
+        bairro = self.bairro_entry.get()
 
-        if not all(dados.values()):
+        if not all([nome, cpf, telefone, rua, numero, bairro]):
             messagebox.showwarning("Aviso", "Preencha todos os campos!")
             return
 
-        # Simula sucesso no cadastro
-        messagebox.showinfo("Sucesso", "Cliente cadastrado com sucesso!")
-        if self.on_cadastro_success:
-            self.on_cadastro_success()
+        # *** AQUI É ONDE A INTEGRAÇÃO COM O BANCO DE DADOS ACONTECE ***
+        cliente_id = self.db.insert_cliente(nome, cpf, telefone, rua, numero, bairro)
 
+        if cliente_id:
+            messagebox.showinfo("Sucesso", f"Cliente cadastrado com sucesso! (ID: {cliente_id})")
+            if self.on_cadastro_success:
+                self.on_cadastro_success()
+        else:
+            messagebox.showerror("Erro", "Falha ao cadastrar cliente. Verifique o console para mais detalhes (CPF duplicado?).")
