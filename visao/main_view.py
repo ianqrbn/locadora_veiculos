@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from cliente_create_view import ClientView
+# Importe os outros módulos de View conforme necessário
 
 
 class MainView(tk.Tk):
@@ -10,8 +11,11 @@ class MainView(tk.Tk):
         self.geometry("1024x768")
         self.configure(bg="#f0f0f0")
 
+        self.view_atual = None  # Mantém controle da view atual exibida
+
         self.criar_menu_principal()
         self.criar_area_conteudo()
+        self.criar_status_bar()
 
     def criar_menu_principal(self):
         menubar = tk.Menu(self)
@@ -21,6 +25,7 @@ class MainView(tk.Tk):
         menu_cadastros.add_command(label="Veículos", accelerator="Ctrl+V")
         menu_cadastros.add_separator()
         menu_cadastros.add_command(label="Sair", command=self.quit)
+
         menubar.add_cascade(label="Cadastros", menu=menu_cadastros)
 
         menu_operacoes = tk.Menu(menubar, tearoff=0)
@@ -48,21 +53,38 @@ class MainView(tk.Tk):
         self.label_bem_vindo = ttk.Label(self.aba_dashboard, text="Bem-vindo ao Sistema!")
         self.label_bem_vindo.pack(pady=20)
 
-        self.cadastro_cliente_view = ClientView(
-            self.aba_dashboard,
-            on_cadastro_success=self.on_cliente_cadastrado
-        )
+    def criar_status_bar(self):
+        self.status_var = tk.StringVar()
+        self.status_var.set("Pronto")
+        status_bar = ttk.Label(self, textvariable=self.status_var, relief=tk.SUNKEN, anchor="w")
+        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
-    def exibir_cadastro_cliente(self):
+    def atualizar_status(self, mensagem):
+        self.status_var.set(mensagem)
+
+    def exibir_view_conteudo(self, view_class, titulo_status):
+       
+        if self.view_atual:
+            self.view_atual.pack_forget()
+
+        
         self.label_bem_vindo.pack_forget()
-        if not self.cadastro_cliente_view.winfo_ismapped():
-            self.cadastro_cliente_view.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        self.view_atual = view_class(self.aba_dashboard)
+        self.view_atual.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        self.atualizar_status(titulo_status)
         self.notebook.select(self.aba_dashboard)
 
-    def on_cliente_cadastrado(self):
-        self.cadastro_cliente_view.pack_forget()
-        self.label_bem_vindo.pack(pady=20)
+    def exibir_cadastro_cliente(self):
+        self.exibir_view_conteudo(lambda parent: ClientView(parent, on_cadastro_success=self.on_cliente_cadastrado),
+                                  "Janela de Clientes aberta")
 
+    def on_cliente_cadastrado(self):
+        if self.view_atual:
+            self.view_atual.pack_forget()
+        self.label_bem_vindo.pack(pady=20)
+        self.atualizar_status("Cliente cadastrado com sucesso!")
 
 
 if __name__ == "__main__":
