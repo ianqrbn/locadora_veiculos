@@ -11,7 +11,7 @@ class MainView(tk.Tk):
         self.geometry("1024x768")
         self.configure(bg="#f0f0f0")
 
-        self.view_atual = None  # Mantém controle da view atual exibida
+        self.view_atual = None
 
         self.criar_menu_principal()
         self.criar_area_conteudo()
