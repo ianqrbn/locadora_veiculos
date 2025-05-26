@@ -165,3 +165,7 @@ class Database:
         except sqlite3.Error as e:
             print(f"Erro ao inserir multa: {e}")
             return None
+        
+    def get_all_multas(self):
+        self.cursor.execute('SELECT * FROM multas')
+        return self.cursor.fetchall()

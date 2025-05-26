@@ -47,6 +47,33 @@ class FineView(ttk.Frame):
         ttk.Button(btn_frame, text="Limpar", command=self.limpar_campos).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Fechar", command=self.limpar_e_ocultar).pack(side=tk.RIGHT, padx=5)
 
+        self.tree = ttk.Treeview(self, columns=("id", "locacao_id", "data_multa", "valor", "situacao"), show="headings")
+        self.tree.heading("id", text="ID")
+        self.tree.heading("locacao_id", text="ID Locação")
+        self.tree.heading("data_multa", text="Data Multa")
+        self.tree.heading("valor", text="Valor")
+        self.tree.heading("situacao", text="Situação")
+
+        self.tree.column("id", width=50, anchor=tk.CENTER)
+        self.tree.column("locacao_id", width=100, anchor=tk.CENTER)
+        self.tree.column("data_multa", width=100, anchor=tk.CENTER)
+        self.tree.column("valor", width=100, anchor=tk.E)
+        self.tree.column("situacao", width=100, anchor=tk.CENTER)
+
+        self.tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        self.atualizar_multas()
+
+    def atualizar_multas(self):
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+
+        try:
+            multas = self.db.get_all_multas()  
+            for loc in multas:
+                self.tree.insert("", tk.END, values=loc[:5])  # Exibe os primeiros 5 campos
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao carregar locações: {e}")
+
     def limpar_campos(self):
         self.locacao_id_entry.delete(0, tk.END)
         self.data_multa_entry.delete(0, tk.END)
