@@ -1,13 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-# Remova a importação de database aqui, a MainView que vai passar a instância
-
 class ClientView(ttk.Frame):
-    # Adicione 'db' como um parâmetro no construtor
     def __init__(self, parent, db, on_cadastro_success):
         super().__init__(parent)
-        self.db = db # Armazena a instância do banco de dados
+        self.db = db
         self.on_cadastro_success = on_cadastro_success
         self.criar_widgets()
 
@@ -44,9 +41,9 @@ class ClientView(ttk.Frame):
 
         ttk.Button(btn_frame, text="Salvar", command=self.cadastrar_cliente).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Limpar", command=self.limpar_campos).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Excluir Cliente", command=self.excluir_cliente).pack(side=tk.RIGHT, padx=5)
         ttk.Button(btn_frame, text="Fechar", command=self.limpar_e_ocultar).pack(side=tk.RIGHT, padx=5)
 
-        # --- Treeview para exibir a lista de clientes ---
         self.tree = ttk.Treeview(self, columns=("ID", "Nome", "CPF", "Telefone"), show="headings")
         self.tree.heading("ID", text="ID")
         self.tree.heading("Nome", text="Nome")
@@ -61,11 +58,8 @@ class ClientView(ttk.Frame):
         self.atualizar_lista_clientes()
 
     def atualizar_lista_clientes(self):
-        # Limpa o Treeview
         for item in self.tree.get_children():
             self.tree.delete(item)
-
-        # Insere clientes atualizados
         clientes = self.db.get_all_clientes()
         for cliente in clientes:
             cliente_id, nome, cpf, telefone, *_ = cliente
@@ -95,12 +89,28 @@ class ClientView(ttk.Frame):
             messagebox.showwarning("Aviso", "Preencha todos os campos!")
             return
 
-        # *** AQUI É ONDE A INTEGRAÇÃO COM O BANCO DE DADOS ACONTECE ***
         cliente_id = self.db.insert_cliente(nome, cpf, telefone, rua, numero, bairro)
 
         if cliente_id:
             messagebox.showinfo("Sucesso", f"Cliente cadastrado com sucesso! (ID: {cliente_id})")
+            self.atualizar_lista_clientes()
             if self.on_cadastro_success:
                 self.on_cadastro_success()
         else:
             messagebox.showerror("Erro", "Falha ao cadastrar cliente. Verifique o console para mais detalhes (CPF duplicado?).")
+
+    def excluir_cliente(self):
+        item = self.tree.selection()
+        if not item:
+            messagebox.showwarning("Aviso", "Selecione um cliente para excluir.")
+            return
+
+        cliente_id = self.tree.item(item)["values"][0]
+        confirm = messagebox.askyesno("Confirmar Exclusão", f"Deseja excluir o cliente ID {cliente_id}?")
+        if confirm:
+            sucesso = self.db.delete_cliente(cliente_id)
+            if sucesso:
+                self.atualizar_lista_clientes()
+                messagebox.showinfo("Sucesso", f"Cliente ID {cliente_id} excluído com sucesso.")
+            else:
+                messagebox.showerror("Erro", "Erro ao excluir cliente. Verifique dependências no banco.")

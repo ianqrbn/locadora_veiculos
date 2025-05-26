@@ -38,6 +38,7 @@ class VehicleView(ttk.Frame):
 
         ttk.Button(btn_frame, text="Salvar", command=self.cadastrar_veiculo).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Limpar", command=self.limpar_campos).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Excluir Veículo", command=self.excluir_veiculo).pack(side=tk.RIGHT, padx=5)
         ttk.Button(btn_frame, text="Fechar", command=self.limpar_e_ocultar).pack(side=tk.RIGHT, padx=5)
 
         # --- Treeview para exibir a lista de veículos ---
@@ -102,3 +103,32 @@ class VehicleView(ttk.Frame):
         else:
             messagebox.showerror("Erro",
                                  "Falha ao cadastrar veículo. Verifique o console para mais detalhes (placas duplicadas?).")
+            
+    def carregar_veiculos(self):
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+
+        veiculos = self.db.get_all_veiculos()
+        for veiculo in veiculos:
+            self.tree.insert("", "end", values=veiculo)
+
+
+    def excluir_veiculo(self):
+
+        selecionado = self.tree.selection()
+        if not selecionado:
+            messagebox.showwarning("Aviso", "Selecione um veículo para excluir!")
+            return
+
+        item = self.tree.item(selecionado[0])
+        veiculo_id = item["values"][0]
+
+        confirmacao = messagebox.askyesno("Confirmação", "Deseja realmente excluir este veículo?")
+        if confirmacao:
+            sucesso = self.db.delete_veiculo(veiculo_id) 
+            if sucesso:
+                messagebox.showinfo("Sucesso", "Veículo excluído com sucesso!")
+                self.carregar_veiculos()
+            else:
+                messagebox.showerror("Erro", "Falha ao excluir veículo!")
+

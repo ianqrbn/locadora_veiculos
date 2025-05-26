@@ -48,6 +48,7 @@ class RentalView(ttk.Frame):
 
         ttk.Button(btn_frame, text="Salvar Locação", command=self.cadastrar_locacao).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Limpar", command=self.limpar_campos).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Excluir Locação", command=self.excluir_locacao).pack(side=tk.RIGHT, padx=5)
         ttk.Button(btn_frame, text="Fechar", command=self.limpar_e_ocultar).pack(side=tk.RIGHT, padx=5)
 
         self.tree = ttk.Treeview(self, columns=("id", "cliente_id", "veiculo_id", "data_inicio", "data_prev_fim", "valor_diaria"), show="headings")
@@ -149,3 +150,28 @@ class RentalView(ttk.Frame):
         else:
             messagebox.showerror("Erro",
                                  "Falha ao cadastrar locação. Verifique o console para mais detalhes (IDs de cliente/veículo existentes?).")
+    def carregar_locacoes(self):
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+
+        locacoes = self.db.get_all_locacoes()
+        for locacao in locacoes:
+            self.tree.insert("", "end", values=locacao)
+
+    def excluir_locacao(self):
+        item_selecionado = self.tree.selection()
+        if not item_selecionado:
+            messagebox.showwarning("Aviso", "Selecione uma locação para excluir.")
+            return
+
+        locacao_id = self.tree.item(item_selecionado)["values"][0]
+
+        confirmacao = messagebox.askyesno("Confirmação", f"Deseja realmente excluir a locação ID {locacao_id}?")
+        if confirmacao:
+            sucesso = self.db.delete_locacao(locacao_id)
+            if sucesso:
+                self.carregar_locacoes()
+                messagebox.showinfo("Sucesso", f"Locação ID {locacao_id} excluída com sucesso.")
+            else:
+                messagebox.showerror("Erro", "Falha ao excluir a locação. Verifique o console.")
+            

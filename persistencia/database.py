@@ -98,6 +98,21 @@ class Database:
             print(f"Erro ao inserir cliente: {e}")
             return None
 
+    def delete_cliente(self, cliente_id):
+        try:
+            self.cursor.execute("DELETE FROM clientes WHERE id = ?", (cliente_id,))
+            self.conn.commit()
+            if self.cursor.rowcount > 0:
+                print(f"Cliente com ID {cliente_id} removido com sucesso.")
+                return True
+            else:
+                print(f"Nenhum cliente com ID {cliente_id} foi encontrado.")
+                return False
+        except Exception as e:
+            print("Erro ao excluir cliente:", e)
+            return False
+
+
     def get_all_clientes(self):
         self.cursor.execute('SELECT * FROM clientes')
         return self.cursor.fetchall()
@@ -122,7 +137,20 @@ class Database:
         except sqlite3.Error as e:
             print(f"Erro ao inserir veículo: {e}")
             return None
+    def delete_veiculo(self, veiculo_id):
 
+        try:
+            self.cursor.execute('DELETE FROM veiculos WHERE id = ?', (veiculo_id,))
+            if self.cursor.rowcount == 0:
+                print(f"Nenhum veículo com ID {veiculo_id} foi encontrado.")
+                return False
+            self.conn.commit()
+            print(f"Veículo com ID {veiculo_id} removido com sucesso.")
+            return True
+        except sqlite3.Error as e:
+            print(f"Erro ao excluir veículo: {e}")
+            return False
+        
     def get_all_veiculos(self):
         self.cursor.execute('SELECT * FROM veiculos')
         return self.cursor.fetchall()
@@ -147,10 +175,6 @@ class Database:
         except sqlite3.Error as e:
             print(f"Erro ao inserir locação: {e}")
             return None
-        
-    def get_all_locacoes(self):
-        self.cursor.execute('SELECT * FROM locacoes')
-        return self.cursor.fetchall()
 
     # --- Métodos CRUD para Multas ---
     def insert_multa(self, locacao_id, data_multa, valor, descricao, situacao):
