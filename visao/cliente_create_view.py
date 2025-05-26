@@ -46,6 +46,31 @@ class ClientView(ttk.Frame):
         ttk.Button(btn_frame, text="Limpar", command=self.limpar_campos).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Fechar", command=self.limpar_e_ocultar).pack(side=tk.RIGHT, padx=5)
 
+        # --- Treeview para exibir a lista de clientes ---
+        self.tree = ttk.Treeview(self, columns=("ID", "Nome", "CPF", "Telefone"), show="headings")
+        self.tree.heading("ID", text="ID")
+        self.tree.heading("Nome", text="Nome")
+        self.tree.heading("CPF", text="CPF")
+        self.tree.heading("Telefone", text="Telefone")
+        self.tree.column("ID", width=40, anchor=tk.CENTER)
+        self.tree.column("Nome", width=150)
+        self.tree.column("CPF", width=100)
+        self.tree.column("Telefone", width=100)
+        self.tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        self.atualizar_lista_clientes()
+
+    def atualizar_lista_clientes(self):
+        # Limpa o Treeview
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        # Insere clientes atualizados
+        clientes = self.db.get_all_clientes()
+        for cliente in clientes:
+            cliente_id, nome, cpf, telefone, *_ = cliente
+            self.tree.insert("", tk.END, values=(cliente_id, nome, cpf, telefone))
+
     def limpar_campos(self):
         self.nome_entry.delete(0, tk.END)
         self.cpf_entry.delete(0, tk.END)
