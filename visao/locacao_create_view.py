@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date, datetime
-from veiculo_create_view import VehicleView
 
 
 class RentalView(ttk.Frame):
