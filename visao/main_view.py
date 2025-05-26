@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
-from cliente_create_view import ClientView
-from veiculo_create_view import VehicleView
-from locacao_create_view import RentalView
-from multa_create_view import FineView
+from visao.cliente_create_view import ClientView
+from visao.veiculo_create_view import VehicleView
+from visao.locacao_create_view import RentalView
+from visao.multa_create_view import FineView
 from persistencia.database import Database # Importe o módulo do banco de dados
 
 class MainView(tk.Tk):
@@ -13,7 +13,7 @@ class MainView(tk.Tk):
         self.geometry("1024x768")
         self.configure(bg="#f0f0f0")
 
-        self.db = Database("../persistencia/locadora.db")
+        self.db = Database("persistencia/locadora.db")
         self.view_atual = None
 
         self.criar_menu_principal()
