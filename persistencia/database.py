@@ -147,6 +147,10 @@ class Database:
         except sqlite3.Error as e:
             print(f"Erro ao inserir locação: {e}")
             return None
+        
+    def get_all_locacoes(self):
+        self.cursor.execute('SELECT * FROM locacoes')
+        return self.cursor.fetchall()
 
     # --- Métodos CRUD para Multas ---
     def insert_multa(self, locacao_id, data_multa, valor, descricao, situacao):

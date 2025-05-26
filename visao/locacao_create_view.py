@@ -50,6 +50,36 @@ class RentalView(ttk.Frame):
         ttk.Button(btn_frame, text="Limpar", command=self.limpar_campos).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Fechar", command=self.limpar_e_ocultar).pack(side=tk.RIGHT, padx=5)
 
+        self.tree = ttk.Treeview(self, columns=("id", "cliente_id", "veiculo_id", "data_inicio", "data_prev_fim", "valor_diaria"), show="headings")
+        self.tree.heading("id", text="ID")
+        self.tree.heading("cliente_id", text="Cliente ID")
+        self.tree.heading("veiculo_id", text="Veículo ID")
+        self.tree.heading("data_inicio", text="Data Início")
+        self.tree.heading("data_prev_fim", text="Data Prev. Fim")
+        self.tree.heading("valor_diaria", text="Valor Diária")
+        self.tree.column("id", width=40)
+        self.tree.column("cliente_id", width=80)
+        self.tree.column("veiculo_id", width=80)
+        self.tree.column("data_inicio", width=100)
+        self.tree.column("data_prev_fim", width=110)
+        self.tree.column("valor_diaria", width=100)
+
+        self.tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        self.atualizar_locacoes()
+
+
+    def atualizar_locacoes(self):
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+
+        try:
+            locacoes = self.db.get_all_locacoes()  
+            for loc in locacoes:
+                self.tree.insert("", tk.END, values=loc[:6])  # Exibe os primeiros 6 campos
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao carregar locações: {e}")
+
     def limpar_campos(self):
         self.cliente_id_entry.delete(0, tk.END)
         self.veiculo_id_entry.delete(0, tk.END)
