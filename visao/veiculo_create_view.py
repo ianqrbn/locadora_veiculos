@@ -40,6 +40,35 @@ class VehicleView(ttk.Frame):
         ttk.Button(btn_frame, text="Limpar", command=self.limpar_campos).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Fechar", command=self.limpar_e_ocultar).pack(side=tk.RIGHT, padx=5)
 
+        # --- Treeview para exibir a lista de veículos ---
+        self.tree = ttk.Treeview(self, columns=("ID", "Marca", "Modelo", "Ano", "Placa", "Cor"), show="headings")
+        self.tree.heading("ID", text="ID")
+        self.tree.heading("Marca", text="Marca")
+        self.tree.heading("Modelo", text="Modelo")
+        self.tree.heading("Ano", text="Ano")
+        self.tree.heading("Placa", text="Placa")
+        self.tree.heading("Cor", text="Cor")
+        self.tree.column("ID", width=40, anchor=tk.CENTER)
+        self.tree.column("Marca", width=120)
+        self.tree.column("Modelo", width=120)
+        self.tree.column("Ano", width=60, anchor=tk.CENTER)
+        self.tree.column("Placa", width=100)
+        self.tree.column("Cor", width=80)
+
+        self.tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        self.atualizar_lista_veiculos()
+
+
+    def atualizar_lista_veiculos(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        veiculos = self.db.get_all_veiculos()
+        for veiculo in veiculos:
+            veiculo_id, marca, modelo, ano, placa, cor, *_ = veiculo
+            self.tree.insert("", tk.END, values=(veiculo_id, marca, modelo, ano, placa, cor))
+
     def limpar_campos(self):
         self.marca_entry.delete(0, tk.END)
         self.modelo_entry.delete(0, tk.END)
