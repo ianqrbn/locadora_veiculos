@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date, datetime
+from veiculo_create_view import VehicleView
 
 
 class RentalView(ttk.Frame):
@@ -13,7 +14,6 @@ class RentalView(ttk.Frame):
         # Dicionários para mapear o texto da Combobox para o ID do banco de dados
         self.clientes_map = {}
         self.veiculos_map = {}
-
         self.criar_widgets()
         self.load_combobox_data()
         self.atualizar_locacoes()
@@ -233,7 +233,10 @@ class RentalView(ttk.Frame):
             sucesso = self.db.delete_locacao(locacao_id)
             if sucesso:
                 self.carregar_locacoes()
+                self.db.update_veiculo_status(locacao_id, 'DISPONIVEL')
                 messagebox.showinfo("Sucesso", f"Locação ID {locacao_id} excluída com sucesso.")
+                # TODO: atualizar a pagina
+
             else:
                 messagebox.showerror("Erro", "Falha ao excluir a locação. Verifique o console.")
-            
+
