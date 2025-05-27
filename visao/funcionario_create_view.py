@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from controle.funcionario_controller import FuncionarioController
 
 
 class FuncionarioView(ttk.Frame):
@@ -46,7 +47,7 @@ class FuncionarioView(ttk.Frame):
         btn_frame = ttk.Frame(self)
         btn_frame.pack(pady=10, padx=10, fill=tk.X)
 
-        ttk.Button(btn_frame, text="Salvar Funcionário", command=self.salvar_funcionario).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Salvar Funcionário", command=self.salva_funcionario).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Limpar Campos", command=self.limpar_campos).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Fechar",
                    command=lambda: self.on_success_callback("Cadastro de funcionário fechado.")).pack(side=tk.RIGHT,
@@ -98,29 +99,11 @@ class FuncionarioView(ttk.Frame):
         self.status_var.set("Ativo")  # Reseta para o padrão
         self.nome_entry.focus()
 
-    def salvar_funcionario(self):
-        nome = self.nome_entry.get().strip()
-        email = self.email_entry.get().strip()
-        cpf = self.cpf_entry.get().strip()
-        funcao = self.funcao_entry.get().strip()
-        status_texto = self.status_var.get()
-
-        # Converte o status de texto para booleano (0 ou 1)
-        status_booleano = 1 if status_texto == "Ativo" else 0
-
-        if not all([nome, email, cpf, funcao]):
-            messagebox.showwarning("Campos Obrigatórios", "Nome, E-mail, CPF e Função são obrigatórios!", parent=self)
-            return
-
-        # Adicione aqui mais validações se necessário (ex: formato do CPF, e-mail)
-
-        sucesso = self.db.insert_funcionario(nome, email, cpf, funcao, status_booleano)
-
+    def salva_funcionario(self):
+        sucesso = FuncionarioController.salvar_funcionario(self,self.nome_entry.get().strip(),self.email_entry.get().strip(),self.cpf_entry.get().strip(),self.funcao_entry.get().strip(),self.status_var.get())
         if sucesso:
-            messagebox.showinfo("Sucesso", f"Funcionário '{nome}' cadastrado com sucesso!", parent=self)
+            
             self.limpar_campos()
             self.atualizar_lista_funcionarios()
-        else:
-            messagebox.showerror("Erro de Cadastro",
-                                 "Falha ao cadastrar funcionário. Verifique se o E-mail ou CPF já existem.",
-                                 parent=self)
+
+    

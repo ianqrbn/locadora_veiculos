@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date, datetime
-
+from controle.locacao_controller import LocacaoController
 
 class RentalView(ttk.Frame):
     def __init__(self, parent, controller, db, on_success_callback):
@@ -55,9 +55,9 @@ class RentalView(ttk.Frame):
         # --- Botões de Ação ---
         btn_frame = ttk.Frame(self)
         btn_frame.pack(pady=10, padx=10, fill=tk.X)
-        ttk.Button(btn_frame, text="Salvar Locação", command=self.cadastrar_locacao).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Salvar Locação", command=self.cadastra_locacao).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Limpar", command=self.limpar_campos).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_frame, text="Excluir Locação", command=self.excluir_locacao).pack(side=tk.RIGHT, padx=5)
+        ttk.Button(btn_frame, text="Excluir Locação", command=self.exclui_locacao).pack(side=tk.RIGHT, padx=5)
         ttk.Button(btn_frame, text="Fechar", command=lambda: self.on_success_callback("Operação cancelada.")).pack(
             side=tk.RIGHT, padx=5)
 
@@ -146,71 +146,13 @@ class RentalView(ttk.Frame):
         self.obs_text.delete(1.0, tk.END)
         self.combo_cliente.focus()
 
-    def cadastrar_locacao(self):
-        """Valida e salva a locação com todos os dados vinculados."""
-        # Obter ID do Funcionário
-        try:
-            funcionario_id = self.controller.logged_in_user[0]
-        except (AttributeError, TypeError, IndexError):
-            messagebox.showerror("Erro Crítico",
-                                 "Não foi possível identificar o funcionário logado. Faça login novamente.",
-                                 parent=self)
-            return
-
-        # Obter IDs do Cliente e Veículo
-        cliente_selecionado = self.combo_cliente.get()
-        veiculo_selecionado = self.combo_veiculo.get()
-
-        if not cliente_selecionado or not veiculo_selecionado:
-            messagebox.showwarning("Aviso", "Por favor, selecione um cliente e um veículo.", parent=self)
-            return
-        cliente_id = self.clientes_map[cliente_selecionado]
-        veiculo_id = self.veiculos_map[veiculo_selecionado]
-
-        # Obter e validar outros dados do formulário
-        data_inicio = self.data_inicio_entry.get()
-        data_prev_fim = self.data_prev_fim_entry.get()
-        valor_diaria_str = self.valor_diaria_entry.get().replace(',', '.')  # Aceita vírgula
-        observacoes = self.obs_text.get("1.0", tk.END).strip()
-
-        if not all([data_inicio, data_prev_fim, valor_diaria_str]):
-            messagebox.showwarning("Aviso", "Preencha as datas e o valor da diária!", parent=self)
-            return
-
-        try:
-            # Validação de datas
-            datetime.strptime(data_inicio, "%d/%m/%Y")
-            datetime.strptime(data_prev_fim, "%d/%m/%Y")
-            # Validação do valor
-            valor_diaria = float(valor_diaria_str)
-        except ValueError:
-            messagebox.showerror("Erro de Formato", "Verifique o formato da data (DD/MM/AAAA) ou do valor monetário.",
-                                 parent=self)
-            return
-
-        # Salvar no Banco de Dados
-        locacao_id = self.db.insert_locacao(
-            cliente_id=cliente_id,
-            veiculo_id=veiculo_id,
-            funcionario_id=funcionario_id,
-            data_inicio=data_inicio,
-            data_prev_fim=data_prev_fim,
-            valor_diaria=valor_diaria,
-            observacoes=observacoes
-        )
-
-        if locacao_id:
-            # Atualiza o status do veículo para 'ALUGADO'
-            self.db.update_veiculo_status(veiculo_id, 'ALUGADO')
-
-            messagebox.showinfo("Sucesso", f"Locação ID {locacao_id} cadastrada com sucesso!", parent=self)
-
-            # Limpa e atualiza a tela
+    def cadastra_locacao(self):
+        locacao = LocacaoController.cadastrar_locacao(self, self.combo_cliente.get(), self.combo_veiculo.get(),self.data_inicio_entry.get(),self.data_prev_fim_entry.get(),self.valor_diaria_entry.get().replace(',', '.'), self.obs_text.get("1.0", tk.END).strip())
+        if locacao:
             self.limpar_campos()
             self.load_combobox_data()
             self.atualizar_locacoes()
-        else:
-            messagebox.showerror("Erro", "Falha ao cadastrar locação no banco de dados.", parent=self)
+
     def carregar_locacoes(self):
         for row in self.tree.get_children():
             self.tree.delete(row)
@@ -219,23 +161,7 @@ class RentalView(ttk.Frame):
         for locacao in locacoes:
             self.tree.insert("", "end", values=locacao)
 
-    def excluir_locacao(self):
-        item_selecionado = self.tree.selection()
-        if not item_selecionado:
-            messagebox.showwarning("Aviso", "Selecione uma locação para excluir.")
-            return
-
-        locacao_id = self.tree.item(item_selecionado)["values"][0]
-
-        confirmacao = messagebox.askyesno("Confirmação", f"Deseja realmente excluir a locação ID {locacao_id}?")
-        if confirmacao:
-            sucesso = self.db.delete_locacao(locacao_id)
-            if sucesso:
-                self.carregar_locacoes()
-                self.db.update_veiculo_status(locacao_id, 'DISPONIVEL')
-                messagebox.showinfo("Sucesso", f"Locação ID {locacao_id} excluída com sucesso.")
-                # TODO: atualizar a pagina
-
-            else:
-                messagebox.showerror("Erro", "Falha ao excluir a locação. Verifique o console.")
-
+    def exclui_locacao(self):
+        sucesso = LocacaoController.excluir_locacao(self,self.tree.selection(),self.tree.item(self.tree.selection())["values"][0])
+        if sucesso:
+            self.carregar_locacoes()
