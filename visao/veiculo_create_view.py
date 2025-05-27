@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-
+from controle.veiculo_controller import VeiculoController
 
 class VehicleView(ttk.Frame):
     # --- __INIT__ CORRIGIDO para aceitar 'controller' ---
@@ -42,9 +42,9 @@ class VehicleView(ttk.Frame):
         btn_frame = ttk.Frame(self)
         btn_frame.pack(pady=10, padx=10, fill=tk.X)
 
-        ttk.Button(btn_frame, text="Salvar Veículo", command=self.cadastrar_veiculo).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Salvar Veículo", command=self.cadastra_veiculo).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Limpar Campos", command=self.limpar_campos).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_frame, text="Excluir Veículo", command=self.excluir_veiculo).pack(side=tk.RIGHT, padx=5)
+        ttk.Button(btn_frame, text="Excluir Veículo", command=self.exclui_veiculo).pack(side=tk.RIGHT, padx=5)
         ttk.Button(btn_frame, text="Fechar",
                    command=lambda: self.on_success_callback("Cadastro de veículo fechado.")).pack(side=tk.RIGHT, padx=5)
 
@@ -85,33 +85,11 @@ class VehicleView(ttk.Frame):
         self.cor_entry.delete(0, tk.END)
         self.marca_entry.focus()
 
-    def cadastrar_veiculo(self):
-        marca = self.marca_entry.get().strip()
-        modelo = self.modelo_entry.get().strip()
-        ano_str = self.ano_entry.get().strip()
-        placa = self.placa_entry.get().strip().upper()
-        cor = self.cor_entry.get().strip()
-
-        if not all([marca, modelo, ano_str, placa, cor]):
-            messagebox.showwarning("Campos Vazios", "Todos os campos são obrigatórios!", parent=self)
-            return
-
-        try:
-            ano = int(ano_str)
-        except ValueError:
-            messagebox.showerror("Erro de Formato", "O ano deve ser um número válido (ex: 2023).", parent=self)
-            return
-
-        # O método insert_veiculo no database.py já não espera 'chassi'
-        veiculo_id = self.db.insert_veiculo(marca, modelo, ano, placa, cor)
-
-        if veiculo_id:
-            messagebox.showinfo("Sucesso", f"Veículo '{marca} {modelo}' cadastrado com sucesso!", parent=self)
+    def cadastra_veiculo(self):
+        veiculo = VeiculoController.cadastrar_veiculo(self,self.marca_entry.get().strip(),self.modelo_entry.get().strip(),self.ano_entry.get().strip(),self.placa_entry.get().strip().upper(),self.cor_entry.get().strip())
+        if veiculo:
             self.limpar_campos()
             self.atualizar_lista_veiculos()
-        else:
-            messagebox.showerror("Erro",
-                                 "Falha ao cadastrar veículo. Verifique o console para mais detalhes (placas duplicadas?).")
 
     def carregar_veiculos(self):
         for row in self.tree.get_children():
@@ -122,25 +100,8 @@ class VehicleView(ttk.Frame):
             self.tree.insert("", "end", values=veiculo)
 
 
-    def excluir_veiculo(self):
-
-        selecionado = self.tree.selection()
-        if not selecionado:
-            messagebox.showwarning("Aviso", "Selecione um veículo para excluir!")
-            return
-
-        item = self.tree.item(selecionado[0])
-        veiculo_id = item["values"][0]
-
-        confirmacao = messagebox.askyesno("Confirmação", "Deseja realmente excluir este veículo?")
-        if confirmacao:
-            sucesso = self.db.delete_veiculo(veiculo_id)
-            if sucesso:
-                messagebox.showinfo("Sucesso", "Veículo excluído com sucesso!")
-                self.carregar_veiculos()
-            else:
-                messagebox.showerror("Erro", "Falha ao excluir veículo!")
-
-
-            messagebox.showerror("Erro de Cadastro", "Falha ao cadastrar veículo. Verifique se a placa já existe.",
-                                 parent=self)
+    def exclui_veiculo(self):
+        sucesso = VeiculoController.excluir_veiculo(self,self.tree.selection())
+        if sucesso:
+            self.carregar_veiculos()
+       
