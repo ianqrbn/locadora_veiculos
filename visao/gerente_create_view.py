@@ -9,7 +9,7 @@ class GerenteCreateView(tk.Toplevel):
         self.controller = controller
 
         self.title("Cadastro Inicial do Gerente")
-        self.geometry("450x350")
+        self.geometry("450x400")
         self.resizable(False, False)
 
         # self.transient(parent) # <-- REMOVA OU COMENTE ESTA LINHA
