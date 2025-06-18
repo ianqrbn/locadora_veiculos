@@ -16,6 +16,7 @@ class Funcionario:
 
         if sucesso:
             messagebox.showinfo("Sucesso", f"Funcionário '{nome}' cadastrado com sucesso!", parent=self)
+            return sucesso
         else:
             messagebox.showerror("Erro de Cadastro",
                                  "Falha ao cadastrar funcionário. Verifique se o E-mail ou CPF já existem.",
