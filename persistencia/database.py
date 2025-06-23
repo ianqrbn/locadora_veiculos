@@ -345,7 +345,32 @@ class Database:
 
 
     # --- Métodos CRUD para Multas ---
-    # def insert_multa(self, locacao_id, data_multa, valor, descricao, situacao):
+        # --- Métodos CRUD para Multas ---
+    def insert_multa(self, locacao_id, data_multa, valor, descricao, situacao):
+        """Insere uma nova multa no banco de dados."""
+        if not self.cursor or not self.conn: return None
+        try:
+            self.cursor.execute('''
+                INSERT INTO multas (locacao_id, data_multa, valor, descricao, situacao)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (locacao_id, data_multa, valor, descricao, situacao))
+            self.conn.commit()
+            print(f"Multa para locação ID {locacao_id} inserida com sucesso. ID: {self.cursor.lastrowid}")
+            return self.cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"Erro ao inserir multa: {e}")
+            return None
+
+    def get_all_multas(self):
+        """Retorna todas as multas cadastradas."""
+        if not self.cursor: return []
+        try:
+            self.cursor.execute('SELECT id, locacao_id, data_multa, valor, situacao FROM multas ORDER BY id DESC')
+            return self.cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"Erro ao buscar todas as multas: {e}")
+            return []
+
     # --- Métodos para Locações ---
     def insert_locacao(self, cliente_id, veiculo_id, funcionario_id, data_inicio, data_prev_fim, valor_diaria,
                        observacoes=""):

@@ -148,13 +148,14 @@ class MainView(ttk.Frame):
         # Garanta que RentalView está importado e que seu __init__ espera (parent, controller, db, callback)
         self.exibir_view_conteudo(RentalView, "Nova Locação", self._retornar_ao_dashboard)
 
-    def exibir_cadastro_multa(self):
-        # Garanta que FineView está importado e que seu __init__ espera (parent, controller, db, callback)
-        # self.exibir_view_conteudo(FineView, "Cadastro de Multa", self._retornar_ao_dashboard)
-        self.atualizar_status("Tela de Cadastro de Multas - A implementar")
 
     def exibir_cadastro_funcionario(self):
         self.exibir_view_conteudo(FuncionarioView, "Cadastro de Funcionários", self._retornar_ao_dashboard)
 
+
+    def exibir_cadastro_multa(self):
+        # Garanta que FineView está importado
+        # A linha abaixo chama a tela de cadastro
+        self.exibir_view_conteudo(FineView, "Cadastro de Multa", self._retornar_ao_dashboard)
 # O bloco if __name__ == "__main__": foi removido daqui.
 # A MainView será instanciada pelo ApplicationController.
